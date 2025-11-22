@@ -1,0 +1,29 @@
+DROP DATABASE IF EXISTS chicagodataportal;
+CREATE DATABASE chicagodataportal;
+
+DROP TABLE IF EXISTS taxi;
+CREATE TABLE taxi (
+    trip_id VARCHAR(50) PRIMARY KEY,
+    taxi_id VARCHAR(200),
+    trip_start TIMESTAMP,
+	trip_end TIMESTAMP,
+	trip_seconds INTEGER,
+	trip_miles NUMERIC(6, 2),
+	pickup_census_tract VARCHAR(20),
+	dropoff_census_tract VARCHAR(20),
+	pickup_community_area SMALLINT,
+	dropoff_community_area SMALLINT,
+	fare NUMERIC(8, 2),
+	tips NUMERIC(8, 2),
+	tolls NUMERIC(8, 2),
+	extras NUMERIC(8, 2),
+	trip_total NUMERIC(8, 2),
+	payment_type VARCHAR(20),
+	company VARCHAR(50),
+	pickup_centroid_latitude NUMERIC(11, 9),
+	pickup_centroid_longitude NUMERIC(11, 9),
+	pickup_centroid_location POINT,
+	dropoff_centroid_latitude NUMERIC(11, 9),
+	dropoff_centroid_longitude NUMERIC(11, 9),
+	dropoff_centroid_location POINT
+);
