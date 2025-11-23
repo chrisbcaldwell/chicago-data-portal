@@ -22,8 +22,8 @@ CREATE TABLE taxi (
 	company VARCHAR(50),
 	pickup_centroid_latitude NUMERIC(11, 9),
 	pickup_centroid_longitude NUMERIC(11, 9),
-	pickup_centroid_location POINT,
+	pickup_centroid_location JSONB,
 	dropoff_centroid_latitude NUMERIC(11, 9),
 	dropoff_centroid_longitude NUMERIC(11, 9),
-	dropoff_centroid_location POINT
+	dropoff_centroid_location JSONB
 );
