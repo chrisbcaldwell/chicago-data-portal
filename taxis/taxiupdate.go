@@ -1,9 +1,14 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"log"
+	"net/http"
+	"reflect"
+	"strconv"
 	"strings"
 
 	_ "github.com/lib/pq"
@@ -26,7 +31,7 @@ func main() {
 	db, err := openConnection()
 	if err != nil {
 		fmt.Println("Error connecting to", Database)
-		fmt.Println(err)
+		log.Fatal(err)
 	}
 	defer db.Close()
 
@@ -42,30 +47,30 @@ func main() {
 	}
 }
 
-type taxiTrip struct {
-	TripID      string `json:"trip_id"`
-	TaxiID      string `json:"taxi_id"`
-	TripStart   string `json:"trip_start"`
-	TripEnd     string `json:"trip_end"`
-	TrimSeconds string `json:"trip_seconds"`
-	TripMiles   string `json:"trip_miles"`
-	PTract      string `json:"pickup_census_tract"`
-	DTract      string `json:"dropoff_census_tract"`
-	PCA         string `json:"pickup_community_area"`
-	DCA         string `json:"dropoff_community_area"`
-	Fare        string `json:"fare"`
-	Tips        string `json:"tips"`
-	Tolls       string `json:"tolls"`
-	Extras      string `json:"extras"`
-	Total       string `json:"trip_total"`
-	Payment     string `json:"payment_type"`
-	Company     string `json:"company"`
-	PLat        string `json:"pickup_centroid_latitude"`
-	PLong       string `json:"pickup_centroid_longitude"`
-	PLoc        string `json:"pickup_centroid_location"`
-	DLat        string `json:"dropoff_centroid_latitude"`
-	DLong       string `json:"dropoff_centroid_longitude"`
-	DLoc        string `json:"dropoff_centroid_location"`
+type record struct {
+	RowID       string `json:"trip_id" db:"trip_id"`
+	TaxiID      string `json:"taxi_id" db:"taxi_id"`
+	TripStart   string `json:"trip_start" db:"trip_start"`
+	TripEnd     string `json:"trip_end" db:"trip_end"`
+	TrimSeconds string `json:"trip_seconds" db:"trip_seconds"`
+	TripMiles   string `json:"trip_miles" db:"trip_miles"`
+	PTract      string `json:"pickup_census_tract" db:"pickup_census_tract"`
+	DTract      string `json:"dropoff_census_tract" db:"dropoff_census_tract"`
+	PCA         string `json:"pickup_community_area" db:"pickup_community_area"`
+	DCA         string `json:"dropoff_community_area" db:"dropoff_community_area"`
+	Fare        string `json:"fare" db:"fare"`
+	Tips        string `json:"tips" db:"tips"`
+	Tolls       string `json:"tolls" db:"tolls"`
+	Extras      string `json:"extras" db:"extras"`
+	Total       string `json:"trip_total" db:"trip_total"`
+	Payment     string `json:"payment_type" db:"payment_type"`
+	Company     string `json:"company" db:"company"`
+	PLat        string `json:"pickup_centroid_latitude" db:"pickup_centroid_latitude"`
+	PLong       string `json:"pickup_centroid_longitude" db:"pickup_centroid_longitude"`
+	PLoc        string `json:"pickup_centroid_location" db:"pickup_centroid_location"`
+	DLat        string `json:"dropoff_centroid_latitude" db:"dropoff_centroid_latitude"`
+	DLong       string `json:"dropoff_centroid_longitude" db:"dropoff_centroid_longitude"`
+	DLoc        string `json:"dropoff_centroid_location" db:"dropoff_centroid_location"`
 }
 
 func openConnection() (*sql.DB, error) {
@@ -100,11 +105,79 @@ func lastUpdate(db *sql.DB) string {
 }
 
 func readAndUpdate(u string, db *sql.DB) error {
-	var err error
-
-	// read the JSON line by line
-
-	// update the database with each line's record
-
+	data, err := getJSON(u)
+	if err != nil {
+		return err
+	}
+	err = updateDB(db, data)
 	return err
+}
+
+func getJSON(u string) ([]record, error) {
+	resp, err := http.Get(u)
+	if err != nil {
+		return nil, fmt.Errorf("failed to make HTTP request: %w", err)
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error: http status code %d", resp.StatusCode)
+	}
+	var records []record
+	err = json.NewDecoder(resp.Body).Decode(&records)
+	if err != nil {
+		return nil, fmt.Errorf("unable to decode JSON: %w", err)
+	}
+	return records, nil
+}
+
+func updateDB(db *sql.DB, d []record) error {
+	var ctx context.Context
+	tx, err := db.BeginTx(ctx, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var x record
+	fieldCount := reflect.ValueOf(x).NumField()
+	placeholders := ""
+	for i := 1; i < fieldCount; i++ {
+		placeholders = placeholders + "$" + strconv.Itoa(i) + ", "
+	}
+	placeholders = placeholders + "$" + strconv.Itoa(fieldCount)
+	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", Table, placeholders)
+	for _, r := range d {
+		_, err = tx.Exec(query,
+			r.RowID,
+			r.TaxiID,
+			r.TripStart,
+			r.TripEnd,
+			r.TrimSeconds,
+			r.TripMiles,
+			r.PTract,
+			r.DTract,
+			r.PCA,
+			r.DCA,
+			r.Fare,
+			r.Tips,
+			r.Tolls,
+			r.Extras,
+			r.Total,
+			r.Payment,
+			r.Company,
+			r.PLat,
+			r.PLong,
+			r.PLoc,
+			r.DLat,
+			r.DLong,
+			r.DLoc)
+		if err != nil {
+			_ = tx.Rollback()
+			log.Fatal(err)
+		}
+
+	}
+	err = tx.Commit()
+	if err != nil {
+		log.Fatal(err)
+	}
+	return nil
 }
