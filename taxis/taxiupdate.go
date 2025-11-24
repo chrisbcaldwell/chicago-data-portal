@@ -15,11 +15,12 @@ import (
 )
 
 // connection details
+// URL is for the taxi trips 2013-23 data set
 const (
 	Hostname      = "localhost"
 	Port          = 5433
 	Username      = "postgres"
-	Password      = "pwpwpw"
+	Password      = "root"
 	Database      = "chicago"
 	Table         = "taxitrips"
 	LastUpdateCol = "trip_start_timestamp"
