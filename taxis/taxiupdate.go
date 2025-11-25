@@ -49,29 +49,29 @@ func main() {
 }
 
 type record struct {
-	RowID       string `json:"trip_id" db:"trip_id"`
-	TaxiID      string `json:"taxi_id" db:"taxi_id"`
-	TripStart   string `json:"trip_start" db:"trip_start"`
-	TripEnd     string `json:"trip_end" db:"trip_end"`
-	TrimSeconds string `json:"trip_seconds" db:"trip_seconds"`
-	TripMiles   string `json:"trip_miles" db:"trip_miles"`
-	PTract      string `json:"pickup_census_tract" db:"pickup_census_tract"`
-	DTract      string `json:"dropoff_census_tract" db:"dropoff_census_tract"`
-	PCA         string `json:"pickup_community_area" db:"pickup_community_area"`
-	DCA         string `json:"dropoff_community_area" db:"dropoff_community_area"`
-	Fare        string `json:"fare" db:"fare"`
-	Tips        string `json:"tips" db:"tips"`
-	Tolls       string `json:"tolls" db:"tolls"`
-	Extras      string `json:"extras" db:"extras"`
-	Total       string `json:"trip_total" db:"trip_total"`
-	Payment     string `json:"payment_type" db:"payment_type"`
-	Company     string `json:"company" db:"company"`
-	PLat        string `json:"pickup_centroid_latitude" db:"pickup_centroid_latitude"`
-	PLong       string `json:"pickup_centroid_longitude" db:"pickup_centroid_longitude"`
-	PLoc        string `json:"pickup_centroid_location" db:"pickup_centroid_location"`
-	DLat        string `json:"dropoff_centroid_latitude" db:"dropoff_centroid_latitude"`
-	DLong       string `json:"dropoff_centroid_longitude" db:"dropoff_centroid_longitude"`
-	DLoc        string `json:"dropoff_centroid_location" db:"dropoff_centroid_location"`
+	RowID       string `json:"trip_id"`
+	TaxiID      string `json:"taxi_id"`
+	TripStart   string `json:"trip_start"`
+	TripEnd     string `json:"trip_end"`
+	TrimSeconds string `json:"trip_seconds"`
+	TripMiles   string `json:"trip_miles"`
+	PTract      string `json:"pickup_census_tract"`
+	DTract      string `json:"dropoff_census_tract"`
+	PCA         string `json:"pickup_community_area"`
+	DCA         string `json:"dropoff_community_area"`
+	Fare        string `json:"fare"`
+	Tips        string `json:"tips"`
+	Tolls       string `json:"tolls"`
+	Extras      string `json:"extras"`
+	Total       string `json:"trip_total"`
+	Payment     string `json:"payment_type"`
+	Company     string `json:"company"`
+	PLat        string `json:"pickup_centroid_latitude"`
+	PLong       string `json:"pickup_centroid_longitude"`
+	PLoc        string `json:"pickup_centroid_location"`
+	DLat        string `json:"dropoff_centroid_latitude"`
+	DLong       string `json:"dropoff_centroid_longitude"`
+	DLoc        string `json:"dropoff_centroid_location"`
 }
 
 func openConnection() (*sql.DB, error) {
@@ -137,7 +137,7 @@ func updateDB(db *sql.DB, d []record) error {
 	if err != nil {
 		log.Fatal(err)
 	}
-	var x record
+	var x record // nil record from which to get the field names
 	fieldCount := reflect.ValueOf(x).NumField()
 	placeholders := ""
 	for i := 1; i < fieldCount; i++ {
