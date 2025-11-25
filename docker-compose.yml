@@ -1,2 +1,23 @@
 name: "chicago-data-portal"
 
+services:
+  postgres:
+    image: postgres:alpine
+    container_name: postgres-chi
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=italianbeef
+      - POSTGRES_DB=main
+    volumes:
+      - ./chi-data:/var/lib/postgresql/data/
+    networks:
+      - psql
+    ports:
+      - "5433:5432"
+
+volumes:
+  chi-data:
+
+networks:
+  psql:
+    driver: bridge
