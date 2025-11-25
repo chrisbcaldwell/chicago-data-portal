@@ -7,7 +7,4 @@ COPY *.go ./
 # Build
 RUN CGO_ENABLED=0 GOOS=linux go build -o /taxis
 
-# Ports - still gaining understanding of what to do here
-# EXPOSE <port#>
-
 CMD ["/taxis"]
