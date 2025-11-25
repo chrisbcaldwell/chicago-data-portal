@@ -180,5 +180,6 @@ func updateDB(db *sql.DB, d []record) error {
 	if err != nil {
 		log.Fatal(err)
 	}
+	fmt.Println("Updated records committed. ", len(d), "records added.")
 	return nil
 }
