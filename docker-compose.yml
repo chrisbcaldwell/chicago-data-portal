@@ -7,7 +7,7 @@ services:
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=italianbeef
-      - POSTGRES_DB=main
+      - POSTGRES_DB=chicago
     volumes:
       - ./chi-data:/var/lib/postgresql/data/
     networks:

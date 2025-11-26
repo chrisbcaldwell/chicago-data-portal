@@ -1,8 +1,8 @@
-DROP DATABASE IF EXISTS chicagodataportal;
-CREATE DATABASE chicagodataportal;
+DROP DATABASE IF EXISTS chicago;
+CREATE DATABASE chicago;
 
-DROP TABLE IF EXISTS taxi;
-CREATE TABLE taxi (
+DROP TABLE IF EXISTS taxitrips;
+CREATE TABLE taxitrips (
     trip_id VARCHAR(50) PRIMARY KEY,
     taxi_id VARCHAR(200),
     trip_start TIMESTAMP,
