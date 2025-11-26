@@ -20,7 +20,7 @@ const (
 	Hostname      = "localhost"
 	Port          = 5433
 	Username      = "postgres"
-	Password      = "root"
+	Password      = "italianbeef"
 	Database      = "chicago"
 	Table         = "taxitrips"
 	LastUpdateCol = "trip_start_timestamp"
