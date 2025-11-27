@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: italianbeef
       POSTGRES_DB: postgres
     ports:
-      - "5433:5432"
+      - "5434:5432"
       # outside port:in-container port
     volumes:
       - chi-data:/var/lib/postgresql/data   # Persistent data storage

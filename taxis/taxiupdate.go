@@ -18,7 +18,7 @@ import (
 // URL is for the taxi trips 2013-23 data set
 const (
 	Hostname      = "localhost"
-	Port          = 5433
+	Port          = 5434
 	Username      = "postgres"
 	Password      = "italianbeef"
 	Database      = "chicago"
