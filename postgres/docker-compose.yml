@@ -1,0 +1,24 @@
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: chicago_db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: italianbeef
+      POSTGRES_DB: postgres
+    ports:
+      - "5433:5432"
+      # outside port:in-container port
+    volumes:
+      - chi-data:/var/lib/postgresql/data   # Persistent data storage
+    networks:
+      - chi-postgres
+
+volumes:
+  chi-data:
+
+networks:
+  chi-postgres:
+    driver: bridge
