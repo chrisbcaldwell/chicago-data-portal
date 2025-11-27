@@ -1,7 +1,4 @@
-DROP DATABASE IF EXISTS chicago;
-CREATE DATABASE chicago;
-\c chicago;
-
+DROP TABLE IF EXISTS taxitrips;
 CREATE TABLE taxitrips (
     trip_id VARCHAR(50) PRIMARY KEY,
     taxi_id VARCHAR(200),

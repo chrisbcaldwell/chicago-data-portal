@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: italianbeef
-      POSTGRES_DB: postgres
+      POSTGRES_DB: chicago
     ports:
       - "5434:5432"
       # outside port:in-container port
