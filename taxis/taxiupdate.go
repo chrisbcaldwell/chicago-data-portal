@@ -38,7 +38,10 @@ func main() {
 
 	// find the newest record already in the database
 	updated := lastUpdate(db)
-
+	if updated == "Error" {
+		fmt.Println("Error connecting to database", Database)
+		panic("Error connecting to database")
+	}
 	// get the JSON of all records newer than what's already loaded in the database
 	request := URL + "?$where=" + LastUpdateCol + ">%27" + updated + "%27" // "%27" = "'"
 
@@ -92,12 +95,11 @@ func lastUpdate(db *sql.DB) string {
 	defaultDate := "1978-04-09 06:00:00"
 	var updated string
 	err := db.QueryRow(query).Scan(&updated)
-	if err != nil {
-		fmt.Println(err)
+	if err != nil && err != sql.ErrNoRows {
+		log.Fatal(err)
 		return "Error"
 	}
-	// this condition might end up being nil instead
-	if updated == "NULL" {
+	if err == sql.ErrNoRows {
 		updated = defaultDate
 	}
 	// get into the SODA format
