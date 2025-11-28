@@ -36,14 +36,21 @@ func main() {
 	}
 	defer db.Close()
 
+	fmt.Println("openConnection() successful, connected to", Database)
+
 	// find the newest record already in the database
 	updated := lastUpdate(db)
 	if updated == "Error" {
 		fmt.Println("Error connecting to database", Database)
 		panic("Error connecting to database")
 	}
+
+	fmt.Println("last update to", Table, updated)
+
 	// get the JSON of all records newer than what's already loaded in the database
 	request := URL + "?$where=" + LastUpdateCol + ">%27" + updated + "%27" // "%27" = "'"
+
+	fmt.Println("Requesting data from", request)
 
 	err = readAndUpdate(request, db)
 	if err != nil {
@@ -93,13 +100,17 @@ func openConnection() (*sql.DB, error) {
 func lastUpdate(db *sql.DB) string {
 	query := "SELECT MAX(" + LastUpdateCol + ") FROM " + Table + ";"
 	defaultDate := "1978-04-09 06:00:00"
-	var updated string
-	err := db.QueryRow(query).Scan(&updated)
-	if err != nil && err != sql.ErrNoRows {
+	var u sql.NullString
+	err := db.QueryRow(query).Scan(&u)
+	if err != nil {
+		fmt.Println("Error in query", query)
 		log.Fatal(err)
 		return "Error"
 	}
-	if err == sql.ErrNoRows {
+	var updated string
+	if u.Valid {
+		updated = u.String
+	} else {
 		updated = defaultDate
 	}
 	// get into the SODA format

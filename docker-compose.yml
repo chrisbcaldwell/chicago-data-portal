@@ -1,7 +1,7 @@
 services:
   database:
     build:
-      context: .
+      context: ./postgres
       dockerfile: Dockerfile
     container_name: chicago_db
     environment:
@@ -13,6 +13,13 @@ services:
       # outside port:in-container port
     volumes:
       - chi-data:/var/lib/postgresql/data   # Persistent data storage
+    networks:
+      - chi-postgres
+  taxiupdate:
+    build:
+      context: ./taxis
+      dockerfile: Dockerfile
+    container_name: taxiupdate
     networks:
       - chi-postgres
 

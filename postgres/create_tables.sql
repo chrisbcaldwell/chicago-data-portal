@@ -2,8 +2,8 @@ DROP TABLE IF EXISTS taxitrips;
 CREATE TABLE taxitrips (
     trip_id VARCHAR(50) PRIMARY KEY,
     taxi_id VARCHAR(200),
-    trip_start TIMESTAMP,
-	trip_end TIMESTAMP,
+    trip_start_timestamp TIMESTAMP,
+	trip_end_timestamp TIMESTAMP,
 	trip_seconds INTEGER,
 	trip_miles NUMERIC(6, 2),
 	pickup_census_tract VARCHAR(20),
