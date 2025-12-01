@@ -59,29 +59,29 @@ func main() {
 }
 
 type record struct {
-	RowID       string `json:"trip_id"`
-	TaxiID      string `json:"taxi_id"`
-	TripStart   string `json:"trip_start"`
-	TripEnd     string `json:"trip_end"`
-	TrimSeconds string `json:"trip_seconds"`
-	TripMiles   string `json:"trip_miles"`
-	PTract      string `json:"pickup_census_tract"`
-	DTract      string `json:"dropoff_census_tract"`
-	PCA         string `json:"pickup_community_area"`
-	DCA         string `json:"dropoff_community_area"`
-	Fare        string `json:"fare"`
-	Tips        string `json:"tips"`
-	Tolls       string `json:"tolls"`
-	Extras      string `json:"extras"`
-	Total       string `json:"trip_total"`
-	Payment     string `json:"payment_type"`
-	Company     string `json:"company"`
-	PLat        string `json:"pickup_centroid_latitude"`
-	PLong       string `json:"pickup_centroid_longitude"`
-	PLoc        string `json:"pickup_centroid_location"`
-	DLat        string `json:"dropoff_centroid_latitude"`
-	DLong       string `json:"dropoff_centroid_longitude"`
-	DLoc        string `json:"dropoff_centroid_location"`
+	RowID       string          `json:"trip_id"`
+	TaxiID      string          `json:"taxi_id"`
+	TripStart   string          `json:"trip_start_timestamp"`
+	TripEnd     string          `json:"trip_end_timestamp"`
+	TripSeconds string          `json:"trip_seconds"`
+	TripMiles   string          `json:"trip_miles"`
+	PTract      string          `json:"pickup_census_tract"`
+	DTract      string          `json:"dropoff_census_tract"`
+	PCA         string          `json:"pickup_community_area"`
+	DCA         string          `json:"dropoff_community_area"`
+	Fare        string          `json:"fare"`
+	Tips        string          `json:"tips"`
+	Tolls       string          `json:"tolls"`
+	Extras      string          `json:"extras"`
+	Total       string          `json:"trip_total"`
+	Payment     string          `json:"payment_type"`
+	Company     string          `json:"company"`
+	PLat        string          `json:"pickup_centroid_latitude"`
+	PLong       string          `json:"pickup_centroid_longitude"`
+	PLoc        json.RawMessage `json:"pickup_centroid_location"`
+	DLat        string          `json:"dropoff_centroid_latitude"`
+	DLong       string          `json:"dropoff_centroid_longitude"`
+	DLoc        json.RawMessage `json:"dropoff_centroid_location"`
 }
 
 func openConnection() (*sql.DB, error) {
@@ -123,6 +123,7 @@ func readAndUpdate(u string, db *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("getJSON() function returned successfully")
 	err = updateDB(db, data)
 	return err
 }
@@ -136,17 +137,36 @@ func getJSON(u string) ([]record, error) {
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("error: http status code %d", resp.StatusCode)
 	}
+	fmt.Println("Data download successful")
 	var records []record
-	err = json.NewDecoder(resp.Body).Decode(&records)
+	i := 0
+	dec := json.NewDecoder(resp.Body)
+	// read open bracket
+	t, err := dec.Token()
 	if err != nil {
-		return nil, fmt.Errorf("unable to decode JSON: %w", err)
+		fmt.Println("Error reading opening JSON token")
+		log.Fatal(err)
 	}
+	fmt.Println("Opening token read successfully:", t)
+	// while dec contains values
+	for dec.More() {
+		i++
+		var r record
+		err := dec.Decode(&r)
+		if err != nil {
+			return nil, err
+		}
+		records = append(records, r)
+		fmt.Printf("\rJSON record #%d decoded", i)
+	}
+	fmt.Println(i, "JSON records returned")
 	return records, nil
 }
 
 func updateDB(db *sql.DB, d []record) error {
 	var ctx context.Context
 	tx, err := db.BeginTx(ctx, nil)
+	fmt.Println("database transaction begun")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -158,13 +178,15 @@ func updateDB(db *sql.DB, d []record) error {
 	}
 	placeholders = placeholders + "$" + strconv.Itoa(fieldCount)
 	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", Table, placeholders)
+	fmt.Println("Query:")
+	fmt.Println(query)
 	for _, r := range d {
 		_, err = tx.Exec(query,
 			r.RowID,
 			r.TaxiID,
 			r.TripStart,
 			r.TripEnd,
-			r.TrimSeconds,
+			r.TripSeconds,
 			r.TripMiles,
 			r.PTract,
 			r.DTract,
