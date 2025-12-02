@@ -27,7 +27,7 @@ const getTaxiTrips = (request, response) => {
 }
 
 // get all taxi trips originating in a community area
-const getPickup = (request, response) => {
+const getTaxiTripsByPickup = (request, response) => {
     const pickup = parseInt(request.params.pickup)
     let q = `
     SELECT
@@ -48,7 +48,7 @@ const getPickup = (request, response) => {
 }
 
 // get all taxi trips dropping off in a community area
-const getDropoff = (request, response) => {
+const getTaxiTripsByDropoff = (request, response) => {
     const dropoff = parseInt(request.params.dropoff)
     let q = `
     SELECT
@@ -68,3 +68,8 @@ const getDropoff = (request, response) => {
     })
 }
 
+module.exports = {
+    getTaxiTrips,
+    getTaxiTripsByPickup,
+    getTaxiTripsByDropoff
+}
