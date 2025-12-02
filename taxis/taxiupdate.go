@@ -1,12 +1,12 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -59,29 +59,29 @@ func main() {
 }
 
 type record struct {
-	RowID       string          `json:"trip_id"`
-	TaxiID      string          `json:"taxi_id"`
-	TripStart   string          `json:"trip_start_timestamp"`
-	TripEnd     string          `json:"trip_end_timestamp"`
-	TripSeconds string          `json:"trip_seconds"`
-	TripMiles   string          `json:"trip_miles"`
-	PTract      string          `json:"pickup_census_tract"`
-	DTract      string          `json:"dropoff_census_tract"`
-	PCA         string          `json:"pickup_community_area"`
-	DCA         string          `json:"dropoff_community_area"`
-	Fare        string          `json:"fare"`
-	Tips        string          `json:"tips"`
-	Tolls       string          `json:"tolls"`
-	Extras      string          `json:"extras"`
-	Total       string          `json:"trip_total"`
-	Payment     string          `json:"payment_type"`
-	Company     string          `json:"company"`
-	PLat        string          `json:"pickup_centroid_latitude"`
-	PLong       string          `json:"pickup_centroid_longitude"`
-	PLoc        json.RawMessage `json:"pickup_centroid_location"`
-	DLat        string          `json:"dropoff_centroid_latitude"`
-	DLong       string          `json:"dropoff_centroid_longitude"`
-	DLoc        json.RawMessage `json:"dropoff_centroid_location"`
+	RowID       string           `json:"trip_id"`
+	TaxiID      string           `json:"taxi_id"`
+	TripStart   string           `json:"trip_start_timestamp"`
+	TripEnd     string           `json:"trip_end_timestamp"`
+	TripSeconds string           `json:"trip_seconds"`
+	TripMiles   string           `json:"trip_miles"`
+	PTract      string           `json:"pickup_census_tract"`
+	DTract      string           `json:"dropoff_census_tract"`
+	PCA         string           `json:"pickup_community_area"`
+	DCA         string           `json:"dropoff_community_area"`
+	Fare        string           `json:"fare"`
+	Tips        string           `json:"tips"`
+	Tolls       string           `json:"tolls"`
+	Extras      string           `json:"extras"`
+	Total       string           `json:"trip_total"`
+	Payment     string           `json:"payment_type"`
+	Company     string           `json:"company"`
+	PLat        string           `json:"pickup_centroid_latitude"`
+	PLong       string           `json:"pickup_centroid_longitude"`
+	PLoc        *json.RawMessage `json:"pickup_centroid_location"`
+	DLat        string           `json:"dropoff_centroid_latitude"`
+	DLong       string           `json:"dropoff_centroid_longitude"`
+	DLoc        *json.RawMessage `json:"dropoff_centroid_location"`
 }
 
 func openConnection() (*sql.DB, error) {
@@ -159,17 +159,14 @@ func getJSON(u string) ([]record, error) {
 		records = append(records, r)
 		fmt.Printf("\rJSON record #%d decoded", i)
 	}
-	fmt.Println(i, "JSON records returned")
+	fmt.Println(i, "\nJSON records returned")
+	// saving JSON for logging purposes:
+	data, _ := json.Marshal(records)
+	os.WriteFile("data.json", data, 0666)
 	return records, nil
 }
 
 func updateDB(db *sql.DB, d []record) error {
-	var ctx context.Context
-	tx, err := db.BeginTx(ctx, nil)
-	fmt.Println("database transaction begun")
-	if err != nil {
-		log.Fatal(err)
-	}
 	var x record // nil record from which to get the field names
 	fieldCount := reflect.ValueOf(x).NumField()
 	placeholders := ""
@@ -180,41 +177,56 @@ func updateDB(db *sql.DB, d []record) error {
 	query := fmt.Sprintf("INSERT INTO %s VALUES (%s)", Table, placeholders)
 	fmt.Println("Query:")
 	fmt.Println(query)
-	for _, r := range d {
-		_, err = tx.Exec(query,
+	for i, r := range d {
+		_, err := db.Exec(query,
+			// some entries will be "" strings for numeric values, PostgreSQL hates that
+			// they will be transformed to "0"
 			r.RowID,
 			r.TaxiID,
 			r.TripStart,
 			r.TripEnd,
-			r.TripSeconds,
-			r.TripMiles,
+			handleBlank(r.TripSeconds),
+			handleBlank(r.TripMiles),
 			r.PTract,
 			r.DTract,
-			r.PCA,
-			r.DCA,
-			r.Fare,
-			r.Tips,
-			r.Tolls,
-			r.Extras,
-			r.Total,
+			handleBlank(r.PCA),
+			handleBlank(r.DCA),
+			handleBlank(r.Fare),
+			handleBlank(r.Tips),
+			handleBlank(r.Tolls),
+			handleBlank(r.Extras),
+			handleBlank(r.Total),
 			r.Payment,
 			r.Company,
-			r.PLat,
-			r.PLong,
+			handleBlank(r.PLat),
+			handleBlank(r.PLong),
 			r.PLoc,
-			r.DLat,
-			r.DLong,
+			handleBlank(r.DLat),
+			handleBlank(r.DLong),
 			r.DLoc)
 		if err != nil {
-			_ = tx.Rollback()
 			log.Fatal(err)
 		}
-
+		fmt.Printf("\rRecord #%d inserted into %s", i+1, Table)
 	}
-	err = tx.Commit()
+	return nil
+}
+
+func handleBlank(s string) string {
+	if s == "" {
+		return "0"
+	}
+	return s
+}
+
+func float(s string) float64 {
+	if s == "" {
+		return 0
+	}
+	n, err := strconv.ParseFloat(s, 64)
 	if err != nil {
+		fmt.Println("Error converting", s, "to float64")
 		log.Fatal(err)
 	}
-	fmt.Println("Updated records committed. ", len(d), "records added.")
-	return nil
+	return n
 }
