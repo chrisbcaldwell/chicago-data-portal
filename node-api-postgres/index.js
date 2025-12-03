@@ -13,8 +13,8 @@ app.use(
 )
 
 app.get('/taxis', db.getTaxiTrips)
-app.get('/taxis/:pickupCA', db.getTaxiTripsByPickup)
-app.get('/taxis/:dropoffCA', db.getTaxiTripsByDropoff)
+app.get('/taxis/pickup/:pickup', db.getTaxiTripsByPickup)
+app.get('/taxis/dropoff/:dropoff', db.getTaxiTripsByDropoff)
 
 app.listen(port, () => {
   console.log(`App running on port ${port}.`)
