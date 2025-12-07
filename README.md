@@ -1,7 +1,7 @@
 # chicago-data-portal
 Data lake serving selected data from the [City of Chicago Data Portal](https://data.cityofchicago.org/).  Course project for MSDS 432 Foundations of Data Engineering at Northwestern University.
 
-## Backend Microservices
+## Backend
 ### Database Microservices
 | Microservice | Platform      | Docker Image    |
 | ------------ | --------------| ----------------|
@@ -64,4 +64,5 @@ All data extraction microservices were built with Go.
         </tr>
     </tbody>
 </table>
+### Installing and Running the Backend
 
