@@ -26,7 +26,7 @@ All data extraction microservices were built with Go.
             <td><a href="https://data.cityofchicago.org/Transportation/Taxi-Trips-2013-2023-/wrvz-psew/about_data">https://data.cityofchicago.org/Transportation/Taxi-Trips-2013-2023-/wrvz-psew/about_data</a></td>
         </tr>
         <tr>
-            <td>L3 Name B</td>
+            <td><a href="https://data.cityofchicago.org/Transportation/Taxi-Trips-2024-/ajtu-isnz/about_data">https://data.cityofchicago.org/Transportation/Taxi-Trips-2024-/ajtu-isnz/about_data</a></td>
         </tr>
         <tr>
             <td rowspan=2>L2 Name B</td>
