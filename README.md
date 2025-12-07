@@ -64,5 +64,14 @@ All data extraction microservices were built with Go.
         </tr>
     </tbody>
 </table>
-### Installing and Running the Backend
 
+### Installing and Running the Backend
+(under construction)
+
+Insert instructions here
+
+Rough outline:
+
+1. download and install Docker
+2. run database containers
+3. run extraction containers to insert records into database
