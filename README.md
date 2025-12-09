@@ -75,3 +75,8 @@ Rough outline:
 1. download and install Docker
 2. run database containers
 3. run extraction containers to insert records into database
+## Frontend
+### Frontend Microservices
+| Microservice | Platform      | Docker Image    |
+| ------------ | --------------| ----------------|
+| api          | PostgreSQL    | cbcaldwell/xxxx |

@@ -27,6 +27,12 @@ const (
 	URL           = "https://data.cityofchicago.org/resource/wrvz-psew.json"
 )
 
+var URLs = []string{
+	"https://data.cityofchicago.org/resource/wrvz-psew.json", // 2013-2024
+	"https://data.cityofchicago.org/resource/ajtu-isnz.json"} // 2024+
+// URL that works for getting row count
+// https://data.cityofchicago.org/resource/wrvz-psew.json?$select=count(*)
+
 func main() {
 	// connect to the db
 	db, err := openConnection()
@@ -48,11 +54,12 @@ func main() {
 	fmt.Println("last update to", Table, updated)
 
 	// get the JSON of all records newer than what's already loaded in the database
-	request := URL + "?$where=" + LastUpdateCol + ">%27" + updated + "%27" // "%27" = "'"
+	var requests []string
+	for _, u := range URLs {
+		requests = append(requests, u+"?$where="+LastUpdateCol+">%27"+updated+"%27") // "%27" = "'"
+	}
 
-	fmt.Println("Requesting data from", request)
-
-	err = readAndUpdate(request, db)
+	err = readAndUpdate(requests, db)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -118,17 +125,45 @@ func lastUpdate(db *sql.DB) string {
 	return updated
 }
 
-func readAndUpdate(u string, db *sql.DB) error {
-	data, err := getJSON(u)
-	if err != nil {
-		return err
+func readAndUpdate(urls []string, db *sql.DB) error {
+	for _, u := range urls {
+		fmt.Println("getting data from", u)
+		data, err := getJSON(u)
+		if err != nil {
+			return err
+		}
+		fmt.Println("getJSON() function returned successfully for", u)
+		err = updateDB(db, data)
+		if err != nil {
+			fmt.Println("error updating database from", u)
+			return err
+		}
 	}
-	fmt.Println("getJSON() function returned successfully")
-	err = updateDB(db, data)
-	return err
+	return nil
+}
+
+func getNumRows(u string) int {
+	q := u + "?$select=count(*)"
+	r, err := http.Get(q)
+	if err != nil {
+		return -1
+	}
+	defer r.Body.Close()
+	if r.StatusCode != http.StatusOK {
+		return -1
+	}
+	dec := json.NewDecoder(r.Body)
+	var m map[string]string
+	err = dec.Decode(&m)
+	if err != nil {
+		return -1
+	}
+	i, _ := strconv.Atoi(m["count"])
+	return i
 }
 
 func getJSON(u string) ([]record, error) {
+	fmt.Println(getNumRows(u))
 	resp, err := http.Get(u)
 	if err != nil {
 		return nil, fmt.Errorf("failed to make HTTP request: %w", err)
@@ -217,16 +252,4 @@ func handleBlank(s string) string {
 		return "0"
 	}
 	return s
-}
-
-func float(s string) float64 {
-	if s == "" {
-		return 0
-	}
-	n, err := strconv.ParseFloat(s, 64)
-	if err != nil {
-		fmt.Println("Error converting", s, "to float64")
-		log.Fatal(err)
-	}
-	return n
 }
