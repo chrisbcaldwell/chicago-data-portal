@@ -1,5 +1,5 @@
 services:
-  database:
+  postgres:
     build:
       context: ./postgres
       dockerfile: Dockerfile
@@ -17,7 +17,7 @@ services:
       - chi-postgres
   taxiupdate:
     build:
-      context: ./taxis
+      context: ./taxiupdate
       dockerfile: Dockerfile
     container_name: taxiupdate
     networks:

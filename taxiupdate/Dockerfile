@@ -5,6 +5,6 @@ RUN go mod download
 COPY *.go ./
 
 # Build
-RUN CGO_ENABLED=0 GOOS=linux go build -o /taxis
+RUN CGO_ENABLED=0 GOOS=linux go build -o /taxiupdate
 
-CMD ["/taxis"]
+CMD ["/taxiupdate"]
